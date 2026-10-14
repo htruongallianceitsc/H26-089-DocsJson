@@ -1,0 +1,440 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/project-architecture.schema.json",
+  "title": "Project Blueprint - Level 2 Architecture Map (backward compatible with Level 1)",
+  "description": "Additive Level 2 contract. Every valid Level 1 instance remains valid, including meta.schemaVersion=1.0. New sections/links optional; cross-reference existence is checked by validate_references.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "meta",
+    "features"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "Optional editor association to this JSON Schema."
+    },
+    "meta": {
+      "type": "object",
+      "description": "Project identity, intent, technology overview, and last review date.",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "description"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0",
+          "description": "Version of the Level 1 JSON document contract; not the product release version.",
+          "examples": [
+            "1.0"
+          ]
+        },
+        "projectVersion": {
+          "type": "string",
+          "description": "Optional product/release version, independent of schemaVersion.",
+          "examples": [
+            "0.1.0",
+            "1.0.0"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short project name.",
+          "examples": [
+            "ShopNow"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Business purpose in one or two sentences; avoid technical specification here.",
+          "examples": [
+            "Bán hàng online cho shop nhỏ"
+          ]
+        },
+        "stack": {
+          "type": "object",
+          "description": "High-level technology map. Supply only the layers used in the project. Specific versions are optional text.",
+          "additionalProperties": false,
+          "properties": {
+            "frontend": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "Next.js 14"
+              ]
+            },
+            "backend": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "NestJS"
+              ]
+            },
+            "database": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "PostgreSQL"
+              ]
+            },
+            "mobile": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "Flutter"
+              ]
+            },
+            "other": {
+              "type": "array",
+              "description": "Other notable infrastructure/technologies, if any.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the overview was last meaningfully updated, in YYYY-MM-DD format.",
+          "examples": [
+            "2026-10-14"
+          ]
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature catalog keyed by stable IDs. Level 1 should only capture feature identity, business summary, and progress.",
+      "propertyNames": {
+        "pattern": "^F-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/feature"
+      },
+      "examples": [
+        {
+          "F-LOGIN": {
+            "name": "Đăng nhập email",
+            "status": "done"
+          },
+          "F-ORDER": {
+            "name": "Đặt hàng",
+            "status": "in_progress",
+            "description": "Khách hàng đặt đơn và thanh toán COD."
+          }
+        }
+      ]
+    },
+    "entities": {
+      "type": "object",
+      "description": "Optional entity catalog.",
+      "propertyNames": {
+        "pattern": "^E-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/entity"
+      }
+    },
+    "apis": {
+      "type": "object",
+      "description": "Optional API catalog.",
+      "propertyNames": {
+        "pattern": "^A-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/api"
+      }
+    },
+    "screens": {
+      "type": "object",
+      "description": "Optional screen catalog.",
+      "propertyNames": {
+        "pattern": "^S-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/screen"
+      }
+    },
+    "businessRules": {
+      "type": "object",
+      "description": "Optional business rule catalog.",
+      "propertyNames": {
+        "pattern": "^BR-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/businessRule"
+      }
+    }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "status"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short name of a capability visible to users or operators.",
+          "examples": [
+            "Đặt hàng"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional one-sentence business summary, not an implementation specification.",
+          "examples": [
+            "Cho phép khách hàng tạo đơn hàng COD."
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "in_progress",
+            "blocked",
+            "done",
+            "deprecated"
+          ],
+          "description": "Controlled feature lifecycle label. 'done' is a stated project status, not independent verification.",
+          "examples": [
+            "in_progress"
+          ]
+        },
+        "entities": {
+          "type": "array",
+          "description": "Related entities.",
+          "items": {
+            "type": "string",
+            "pattern": "^E-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "apis": {
+          "type": "array",
+          "description": "Related API operations.",
+          "items": {
+            "type": "string",
+            "pattern": "^A-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "screens": {
+          "type": "array",
+          "description": "Screens associated with the feature.",
+          "items": {
+            "type": "string",
+            "pattern": "^S-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "dependsOn": {
+          "type": "array",
+          "description": "Other required features; must not refer to self.",
+          "items": {
+            "type": "string",
+            "pattern": "^F-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "businessRules": {
+          "type": "array",
+          "description": "Business rules governing this feature.",
+          "items": {
+            "type": "string",
+            "pattern": "^BR-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "fieldDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Field data type such as uuid, string, decimal, int, boolean or enum."
+        },
+        "ref": {
+          "type": "string",
+          "pattern": "^E-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$",
+          "description": "Referenced entity ID."
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "unique": {
+          "type": "boolean"
+        },
+        "default": {},
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "minLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Field description."
+        }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fields"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Entity name."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Entity purpose."
+        },
+        "fields": {
+          "type": "object",
+          "description": "Compact and detailed field definitions.",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "$ref": "#/$defs/fieldDetail"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "path"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "API operation label."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this operation does."
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "HEAD",
+            "OPTIONS"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "HTTP path, without method."
+        },
+        "entities": {
+          "type": "array",
+          "description": "Entities involved in this API.",
+          "items": {
+            "type": "string",
+            "pattern": "^E-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "screen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Screen name."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Screen purpose."
+        },
+        "route": {
+          "type": "string",
+          "minLength": 1,
+          "description": "App route or screen path."
+        },
+        "apis": {
+          "type": "array",
+          "description": "API operations invoked from this screen.",
+          "items": {
+            "type": "string",
+            "pattern": "^A-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "businessRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "description"
+      ],
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Business constraint or policy; implementation detail belongs in Level 3."
+        }
+      }
+    }
+  }
+}

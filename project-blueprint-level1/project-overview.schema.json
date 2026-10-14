@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/project-overview.schema.json",
+  "title": "Project Blueprint - Level 1 Overview",
+  "description": "A lightweight project overview. Captures project metadata and a catalog of features without technical implementation details. Level 2/3 artifacts are deliberately out of scope.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "meta",
+    "features"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "Optional editor association to this JSON Schema."
+    },
+    "meta": {
+      "type": "object",
+      "description": "Project identity, intent, technology overview, and last review date.",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "description"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0",
+          "description": "Version of the Level 1 JSON document contract; not the product release version.",
+          "examples": [
+            "1.0"
+          ]
+        },
+        "projectVersion": {
+          "type": "string",
+          "description": "Optional product/release version, independent of schemaVersion.",
+          "examples": [
+            "0.1.0",
+            "1.0.0"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short project name.",
+          "examples": [
+            "ShopNow"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Business purpose in one or two sentences; avoid technical specification here.",
+          "examples": [
+            "Bán hàng online cho shop nhỏ"
+          ]
+        },
+        "stack": {
+          "type": "object",
+          "description": "High-level technology map. Supply only the layers used in the project. Specific versions are optional text.",
+          "additionalProperties": false,
+          "properties": {
+            "frontend": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "Next.js 14"
+              ]
+            },
+            "backend": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "NestJS"
+              ]
+            },
+            "database": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "PostgreSQL"
+              ]
+            },
+            "mobile": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "Flutter"
+              ]
+            },
+            "other": {
+              "type": "array",
+              "description": "Other notable infrastructure/technologies, if any.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the overview was last meaningfully updated, in YYYY-MM-DD format.",
+          "examples": [
+            "2026-10-14"
+          ]
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature catalog keyed by stable IDs. Level 1 should only capture feature identity, business summary, and progress.",
+      "propertyNames": {
+        "pattern": "^F-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/feature"
+      },
+      "examples": [
+        {
+          "F-LOGIN": {
+            "name": "Đăng nhập email",
+            "status": "done"
+          },
+          "F-ORDER": {
+            "name": "Đặt hàng",
+            "status": "in_progress",
+            "description": "Khách hàng đặt đơn và thanh toán COD."
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "status"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short name of a capability visible to users or operators.",
+          "examples": [
+            "Đặt hàng"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional one-sentence business summary, not an implementation specification.",
+          "examples": [
+            "Cho phép khách hàng tạo đơn hàng COD."
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "in_progress",
+            "blocked",
+            "done",
+            "deprecated"
+          ],
+          "description": "Controlled feature lifecycle label. 'done' is a stated project status, not independent verification.",
+          "examples": [
+            "in_progress"
+          ]
+        }
+      }
+    }
+  }
+}

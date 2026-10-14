@@ -1,0 +1,26 @@
+{
+  "$schema": "./project-overview.schema.json",
+  "meta": {
+    "schemaVersion": "1.0",
+    "projectVersion": "0.1.0",
+    "name": "ShopNow",
+    "description": "Bán hàng online cho shop nhỏ",
+    "stack": {
+      "frontend": "Next.js 14",
+      "backend": "NestJS",
+      "database": "PostgreSQL"
+    },
+    "updatedAt": "2026-10-14"
+  },
+  "features": {
+    "F-LOGIN": {
+      "name": "Đăng nhập email",
+      "status": "done"
+    },
+    "F-ORDER": {
+      "name": "Đặt hàng",
+      "description": "Khách hàng chọn sản phẩm và tạo đơn hàng thanh toán COD.",
+      "status": "in_progress"
+    }
+  }
+}

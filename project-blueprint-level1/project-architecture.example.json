@@ -1,0 +1,127 @@
+{
+  "$schema": "./project-architecture.schema.json",
+  "meta": {
+    "schemaVersion": "1.0",
+    "projectVersion": "0.1.0",
+    "name": "ShopNow",
+    "description": "Bán hàng online cho shop nhỏ",
+    "stack": {
+      "frontend": "Next.js 14",
+      "backend": "NestJS",
+      "database": "PostgreSQL"
+    },
+    "updatedAt": "2026-10-14"
+  },
+  "features": {
+    "F-LOGIN": {
+      "name": "Đăng nhập email",
+      "status": "done",
+      "entities": [
+        "E-USER"
+      ],
+      "apis": [
+        "A-LOGIN"
+      ],
+      "screens": [
+        "S-LOGIN"
+      ]
+    },
+    "F-ORDER": {
+      "name": "Đặt hàng",
+      "description": "Khách hàng chọn sản phẩm và tạo đơn hàng thanh toán COD.",
+      "status": "in_progress",
+      "entities": [
+        "E-ORDER",
+        "E-PRODUCT"
+      ],
+      "apis": [
+        "A-ORDER-CREATE"
+      ],
+      "screens": [
+        "S-CHECKOUT"
+      ],
+      "dependsOn": [
+        "F-LOGIN"
+      ],
+      "businessRules": [
+        "BR-PAYMENT-COD"
+      ]
+    }
+  },
+  "entities": {
+    "E-USER": {
+      "name": "User",
+      "fields": {
+        "id": "uuid",
+        "email": "string",
+        "role": "admin|customer"
+      }
+    },
+    "E-PRODUCT": {
+      "name": "Product",
+      "fields": {
+        "id": "uuid",
+        "name": "string",
+        "price": {
+          "type": "decimal",
+          "required": true,
+          "min": 0
+        },
+        "stock": "int"
+      }
+    },
+    "E-ORDER": {
+      "name": "Order",
+      "fields": {
+        "id": "uuid",
+        "userId": {
+          "type": "uuid",
+          "ref": "E-USER",
+          "required": true
+        },
+        "total": "decimal",
+        "status": "pending|paid|cancelled"
+      }
+    }
+  },
+  "apis": {
+    "A-LOGIN": {
+      "name": "Login",
+      "method": "POST",
+      "path": "/auth/login",
+      "entities": [
+        "E-USER"
+      ]
+    },
+    "A-ORDER-CREATE": {
+      "name": "Create order",
+      "method": "POST",
+      "path": "/orders",
+      "entities": [
+        "E-ORDER",
+        "E-PRODUCT"
+      ]
+    }
+  },
+  "screens": {
+    "S-LOGIN": {
+      "name": "Login",
+      "route": "/login",
+      "apis": [
+        "A-LOGIN"
+      ]
+    },
+    "S-CHECKOUT": {
+      "name": "Checkout",
+      "route": "/checkout",
+      "apis": [
+        "A-ORDER-CREATE"
+      ]
+    }
+  },
+  "businessRules": {
+    "BR-PAYMENT-COD": {
+      "description": "Hiện tại chỉ hỗ trợ thanh toán COD."
+    }
+  }
+}
