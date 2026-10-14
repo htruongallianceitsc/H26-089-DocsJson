@@ -1,0 +1,303 @@
+{
+  "$schema": "./project-specification.schema.json",
+  "meta": {
+    "schemaVersion": "1.0",
+    "projectVersion": "0.1.0",
+    "name": "ShopNow",
+    "description": "Bán hàng online cho shop nhỏ",
+    "stack": {
+      "frontend": "Next.js 14",
+      "backend": "NestJS",
+      "database": "PostgreSQL"
+    },
+    "updatedAt": "2026-10-14"
+  },
+  "features": {
+    "F-LOGIN": {
+      "name": "Đăng nhập email",
+      "status": "done",
+      "entities": [
+        "E-USER"
+      ],
+      "apis": [
+        "A-LOGIN"
+      ],
+      "screens": [
+        "S-LOGIN"
+      ]
+    },
+    "F-ORDER": {
+      "name": "Đặt hàng",
+      "description": "Khách hàng chọn sản phẩm và tạo đơn hàng thanh toán COD.",
+      "status": "in_progress",
+      "entities": [
+        "E-ORDER",
+        "E-PRODUCT"
+      ],
+      "apis": [
+        "A-ORDER-CREATE"
+      ],
+      "screens": [
+        "S-CHECKOUT"
+      ],
+      "dependsOn": [
+        "F-LOGIN"
+      ],
+      "businessRules": [
+        "BR-PAYMENT-COD"
+      ],
+      "requirements": [
+        "R-ORDER-CREATE"
+      ],
+      "acceptanceCriteria": [
+        "AC-ORDER-COD"
+      ],
+      "flows": [
+        "FL-ORDER-COD"
+      ],
+      "testCases": [
+        "TC-ORDER-COD"
+      ]
+    }
+  },
+  "entities": {
+    "E-USER": {
+      "name": "User",
+      "fields": {
+        "id": "uuid",
+        "email": "string",
+        "role": "admin|customer"
+      }
+    },
+    "E-PRODUCT": {
+      "name": "Product",
+      "fields": {
+        "id": "uuid",
+        "name": "string",
+        "price": {
+          "type": "decimal",
+          "required": true,
+          "min": 0
+        },
+        "stock": "int"
+      }
+    },
+    "E-ORDER": {
+      "name": "Order",
+      "fields": {
+        "id": "uuid",
+        "userId": {
+          "type": "uuid",
+          "ref": "E-USER",
+          "required": true
+        },
+        "total": "decimal",
+        "status": "pending|paid|cancelled"
+      },
+      "databaseSpecs": [
+        "DB-ORDERS"
+      ]
+    }
+  },
+  "apis": {
+    "A-LOGIN": {
+      "name": "Login",
+      "method": "POST",
+      "path": "/auth/login",
+      "entities": [
+        "E-USER"
+      ]
+    },
+    "A-ORDER-CREATE": {
+      "name": "Create order",
+      "method": "POST",
+      "path": "/orders",
+      "entities": [
+        "E-ORDER",
+        "E-PRODUCT"
+      ],
+      "contract": {
+        "auth": "authenticated",
+        "request": {
+          "contentType": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array"
+              },
+              "paymentMethod": {
+                "const": "COD"
+              }
+            },
+            "required": [
+              "items",
+              "paymentMethod"
+            ]
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created",
+            "example": {
+              "id": "order-001",
+              "status": "pending"
+            }
+          },
+          "400": {
+            "description": "Invalid cart"
+          }
+        }
+      }
+    }
+  },
+  "screens": {
+    "S-LOGIN": {
+      "name": "Login",
+      "route": "/login",
+      "apis": [
+        "A-LOGIN"
+      ]
+    },
+    "S-CHECKOUT": {
+      "name": "Checkout",
+      "route": "/checkout",
+      "apis": [
+        "A-ORDER-CREATE"
+      ],
+      "spec": {
+        "title": "Checkout",
+        "fields": [
+          {
+            "name": "address",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "paymentMethod",
+            "type": "select",
+            "required": true
+          }
+        ],
+        "actions": [
+          {
+            "name": "Place order",
+            "type": "submit",
+            "api": "A-ORDER-CREATE"
+          }
+        ],
+        "states": [
+          "initial",
+          "loading",
+          "success",
+          "error"
+        ],
+        "designRef": "docs/screens/checkout.md"
+      }
+    }
+  },
+  "businessRules": {
+    "BR-PAYMENT-COD": {
+      "description": "Hiện tại chỉ hỗ trợ thanh toán COD.",
+      "details": {
+        "condition": "Đơn hàng mới",
+        "effect": "Chỉ cho phép paymentMethod=COD"
+      }
+    }
+  },
+  "requirements": {
+    "R-ORDER-CREATE": {
+      "title": "Tạo đơn hàng COD",
+      "description": "Khách đăng nhập tạo đơn khi giỏ hàng có sản phẩm đủ tồn kho",
+      "priority": "must",
+      "type": "functional",
+      "feature": "F-ORDER",
+      "acceptanceCriteria": [
+        "AC-ORDER-COD"
+      ],
+      "businessRules": [
+        "BR-PAYMENT-COD"
+      ],
+      "status": "approved"
+    }
+  },
+  "acceptanceCriteria": {
+    "AC-ORDER-COD": {
+      "description": "Đơn COD được tạo thành công với tổng tiền chính xác",
+      "given": "Người dùng đăng nhập, giỏ hàng hợp lệ",
+      "when": "Nhấn Đặt hàng",
+      "then": "Hệ thống tạo đơn trạng thái pending và trả về mã đơn",
+      "requirement": "R-ORDER-CREATE",
+      "testCases": [
+        "TC-ORDER-COD"
+      ]
+    }
+  },
+  "flows": {
+    "FL-ORDER-COD": {
+      "name": "Checkout COD",
+      "type": "happy",
+      "feature": "F-ORDER",
+      "steps": [
+        {
+          "id": "step-1",
+          "actor": "customer",
+          "action": "Mở trang thanh toán",
+          "screen": "S-CHECKOUT",
+          "next": [
+            "step-2"
+          ]
+        },
+        {
+          "id": "step-2",
+          "actor": "customer",
+          "action": "Gửi yêu cầu tạo đơn COD",
+          "api": "A-ORDER-CREATE"
+        }
+      ]
+    }
+  },
+  "testCases": {
+    "TC-ORDER-COD": {
+      "title": "Tạo đơn COD thành công",
+      "type": "positive",
+      "preconditions": [
+        "Đã đăng nhập",
+        "Có sản phẩm còn tồn kho"
+      ],
+      "steps": [
+        "Mở /checkout",
+        "Chọn COD",
+        "Gửi đơn"
+      ],
+      "expected": "HTTP 201 và order.status=pending",
+      "acceptanceCriteria": [
+        "AC-ORDER-COD"
+      ],
+      "requirements": [
+        "R-ORDER-CREATE"
+      ],
+      "status": "not_run"
+    }
+  },
+  "databaseSpecs": {
+    "DB-ORDERS": {
+      "name": "Orders table",
+      "entity": "E-ORDER",
+      "schema": "public",
+      "table": "orders",
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idx_orders_user_id",
+          "columns": [
+            "userId"
+          ],
+          "unique": false
+        }
+      ]
+    }
+  }
+}
