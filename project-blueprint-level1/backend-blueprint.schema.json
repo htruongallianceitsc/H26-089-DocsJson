@@ -1,0 +1,646 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/project-blueprint/backend.schema.json",
+  "title": "backend Source Blueprint",
+  "description": "Source-specific observations. Never infer the other tier. All IDs local to this source document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "meta",
+    "features"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional editor schema reference"
+    },
+    "kind": {
+      "const": "backend"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string",
+          "description": "Repository name or root identifier"
+        },
+        "framework": {
+          "type": "string"
+        },
+        "scannedAt": {
+          "type": "string",
+          "format": "date"
+        },
+        "commit": {
+          "type": "string",
+          "description": "Git SHA if available"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "name",
+        "repo"
+      ]
+    },
+    "features": {
+      "type": "object",
+      "patternProperties": {
+        "^F-[A-Z0-9]+(?:-[A-Z0-9]+)*$": {
+          "$ref": "#/$defs/feature"
+        }
+      },
+      "additionalProperties": false
+    },
+    "endpoints": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/endpoint"
+      }
+    },
+    "dtos": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/dto"
+      }
+    },
+    "services": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/service"
+      }
+    },
+    "entities": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/entity"
+      }
+    },
+    "businessRules": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/rule"
+      }
+    },
+    "migrations": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/migration"
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "relatedRefs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ]
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Repository-relative source file path",
+          "examples": [
+            "src/app/checkout/page.tsx"
+          ]
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Exported function/class/component, if known"
+        },
+        "lineStart": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lineEnd": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "note": {
+          "type": "string",
+          "description": "Why the evidence supports this claim"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "HEAD",
+            "OPTIONS"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "permissions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          }
+        },
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "dto": {
+              "type": "string",
+              "description": "Project-scoped identifier, stable within this source blueprint."
+            },
+            "contentType": {
+              "type": "string"
+            },
+            "example": {}
+          }
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "dto": {
+              "type": "string",
+              "description": "Project-scoped identifier, stable within this source blueprint."
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            },
+            "example": {}
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "default": []
+        },
+        "service": {
+          "type": "string",
+          "description": "Project-scoped identifier, stable within this source blueprint."
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name",
+        "method",
+        "path"
+      ]
+    },
+    "dto": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/field"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type expressed by the actual source code"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "validation": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "default": {},
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "table": {
+          "type": "string",
+          "description": "Persisted table name if supported by source"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/field"
+              }
+            ]
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string",
+                "description": "Project-scoped identifier, stable within this source blueprint."
+              },
+              "kind": {
+                "type": "string",
+                "description": "many-to-one, one-to-many, etc."
+              }
+            },
+            "required": [
+              "field",
+              "target"
+            ]
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "condition": {
+          "type": "string"
+        },
+        "effect": {
+          "type": "string"
+        },
+        "implementedBy": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "indexes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  }
+}

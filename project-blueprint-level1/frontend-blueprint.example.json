@@ -1,0 +1,192 @@
+{
+  "$schema": "./frontend-blueprint.schema.json",
+  "kind": "frontend",
+  "meta": {
+    "schemaVersion": "1.0",
+    "name": "ShopNow Web",
+    "description": "Frontend bán hàng ShopNow",
+    "repo": "shopnow-web",
+    "framework": "Next.js 14",
+    "scannedAt": "2026-10-14"
+  },
+  "features": {
+    "F-LOGIN": {
+      "name": "Đăng nhập email",
+      "status": "done",
+      "screens": [
+        "S-LOGIN"
+      ],
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/app/login/page.tsx",
+          "symbol": "LoginPage"
+        }
+      ]
+    },
+    "F-ORDER": {
+      "name": "Đặt hàng",
+      "status": "in_progress",
+      "screens": [
+        "S-CHECKOUT"
+      ],
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/app/checkout/page.tsx",
+          "symbol": "CheckoutPage"
+        }
+      ]
+    }
+  },
+  "screens": {
+    "S-LOGIN": {
+      "name": "Login",
+      "route": "/login",
+      "components": [
+        "C-LOGIN-FORM"
+      ],
+      "calls": [
+        "CALL-LOGIN"
+      ],
+      "states": [
+        "idle",
+        "loading",
+        "error",
+        "success"
+      ],
+      "auth": {
+        "required": false
+      },
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/app/login/page.tsx"
+        }
+      ]
+    },
+    "S-CHECKOUT": {
+      "name": "Checkout",
+      "route": "/checkout",
+      "components": [
+        "C-CHECKOUT-FORM"
+      ],
+      "calls": [
+        "CALL-ORDER-CREATE"
+      ],
+      "forms": [
+        "FORM-CHECKOUT"
+      ],
+      "states": [
+        "loading",
+        "error",
+        "success"
+      ],
+      "auth": {
+        "required": true
+      },
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/app/checkout/page.tsx"
+        }
+      ]
+    }
+  },
+  "components": {
+    "C-LOGIN-FORM": {
+      "name": "LoginForm",
+      "kind": "component",
+      "calls": [
+        "CALL-LOGIN"
+      ],
+      "evidence": [
+        {
+          "path": "src/components/LoginForm.tsx"
+        }
+      ]
+    },
+    "C-CHECKOUT-FORM": {
+      "name": "CheckoutForm",
+      "kind": "component",
+      "calls": [
+        "CALL-ORDER-CREATE"
+      ],
+      "evidence": [
+        {
+          "path": "src/components/CheckoutForm.tsx"
+        }
+      ]
+    }
+  },
+  "apiCalls": {
+    "CALL-LOGIN": {
+      "method": "POST",
+      "path": "/auth/login",
+      "client": "axios",
+      "source": "C-LOGIN-FORM",
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/lib/auth-api.ts"
+        }
+      ]
+    },
+    "CALL-ORDER-CREATE": {
+      "method": "POST",
+      "path": "/orders",
+      "client": "axios",
+      "source": "C-CHECKOUT-FORM",
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/lib/order-api.ts"
+        }
+      ]
+    }
+  },
+  "forms": {
+    "FORM-CHECKOUT": {
+      "name": "Checkout form",
+      "screen": "S-CHECKOUT",
+      "fields": {
+        "address": {
+          "type": "string",
+          "required": true
+        },
+        "note": "string"
+      },
+      "submits": "CALL-ORDER-CREATE",
+      "evidence": [
+        {
+          "path": "src/components/CheckoutForm.tsx"
+        }
+      ]
+    }
+  },
+  "uiFlows": {
+    "FLOW-FE-CHECKOUT": {
+      "name": "Checkout navigation",
+      "steps": [
+        {
+          "screen": "S-CHECKOUT",
+          "action": "Submit checkout"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "src/app/checkout/page.tsx"
+        }
+      ]
+    }
+  },
+  "unknowns": [
+    {
+      "question": "COD là lựa chọn duy nhất hay một trong nhiều phương thức?",
+      "relatedRefs": [
+        "S-CHECKOUT"
+      ],
+      "reason": "UI chỉ chứng minh phương thức được hiển thị, không chứng minh toàn bộ rule backend."
+    }
+  ]
+}

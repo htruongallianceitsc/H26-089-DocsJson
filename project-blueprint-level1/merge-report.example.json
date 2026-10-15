@@ -1,0 +1,54 @@
+{
+  "matchedApiCalls": [
+    {
+      "frontendCall": "CALL-LOGIN",
+      "backendEndpoint": "EP-LOGIN",
+      "projectApi": "A-LOGIN",
+      "basis": "exact HTTP method + path; verify base URL and reverse proxy"
+    },
+    {
+      "frontendCall": "CALL-ORDER-CREATE",
+      "backendEndpoint": "EP-ORDER-CREATE",
+      "projectApi": "A-ORDER-CREATE",
+      "basis": "exact HTTP method + path; verify base URL and reverse proxy"
+    }
+  ],
+  "unmatchedFrontendCalls": [],
+  "unmatchedBackendEndpoints": [],
+  "featureCandidates": [
+    {
+      "backendFeature": "F-AUTH",
+      "name": "Xác thực người dùng",
+      "endpointRefs": [
+        "EP-LOGIN"
+      ],
+      "action": "Review and map to existing FE feature or create new feature manually"
+    },
+    {
+      "backendFeature": "F-ORDER",
+      "name": "Tạo đơn hàng",
+      "possibleFrontendFeature": "F-ORDER",
+      "action": "Review semantic match; same ID is not sufficient evidence"
+    }
+  ],
+  "unresolved": [
+    {
+      "question": "COD là lựa chọn duy nhất hay một trong nhiều phương thức?",
+      "relatedRefs": [
+        "S-CHECKOUT"
+      ],
+      "reason": "UI chỉ chứng minh phương thức được hiển thị, không chứng minh toàn bộ rule backend."
+    },
+    {
+      "question": "Có hỗ trợ COD-only hay phương thức online khác?",
+      "relatedRefs": [
+        "EP-ORDER-CREATE"
+      ],
+      "reason": "Chưa đủ chứng cứ về payment policy."
+    }
+  ],
+  "sourceRefs": {
+    "frontend": "shopnow-web",
+    "backend": "shopnow-api"
+  }
+}

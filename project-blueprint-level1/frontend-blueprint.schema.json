@@ -1,0 +1,576 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/project-blueprint/frontend.schema.json",
+  "title": "frontend Source Blueprint",
+  "description": "Source-specific observations. Never infer the other tier. All IDs local to this source document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "meta",
+    "features"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional editor schema reference"
+    },
+    "kind": {
+      "const": "frontend"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string",
+          "description": "Repository name or root identifier"
+        },
+        "framework": {
+          "type": "string"
+        },
+        "scannedAt": {
+          "type": "string",
+          "format": "date"
+        },
+        "commit": {
+          "type": "string",
+          "description": "Git SHA if available"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "name",
+        "repo"
+      ]
+    },
+    "features": {
+      "type": "object",
+      "patternProperties": {
+        "^F-[A-Z0-9]+(?:-[A-Z0-9]+)*$": {
+          "$ref": "#/$defs/feature"
+        }
+      },
+      "additionalProperties": false
+    },
+    "screens": {
+      "type": "object",
+      "patternProperties": {
+        "^S-[A-Z0-9]+(?:-[A-Z0-9]+)*$": {
+          "$ref": "#/$defs/screen"
+        }
+      },
+      "additionalProperties": false
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/component"
+      }
+    },
+    "apiCalls": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/apiCall"
+      }
+    },
+    "forms": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/form"
+      }
+    },
+    "uiFlows": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/uiFlow"
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "relatedRefs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ]
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Repository-relative source file path",
+          "examples": [
+            "src/app/checkout/page.tsx"
+          ]
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Exported function/class/component, if known"
+        },
+        "lineStart": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lineEnd": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "note": {
+          "type": "string",
+          "description": "Why the evidence supports this claim"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "screen": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "route": {
+          "type": "string",
+          "description": "Actual route registered in router"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        },
+        "calls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        },
+        "forms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "loading, empty, error, success, unauthorized..."
+          },
+          "default": []
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "redirect": {
+              "type": "string"
+            }
+          }
+        },
+        "featureHints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name",
+        "route"
+      ]
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "layout",
+            "page",
+            "component",
+            "hook",
+            "store",
+            "provider",
+            "other"
+          ]
+        },
+        "uses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        },
+        "calls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "apiCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "HEAD",
+            "OPTIONS"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "description": "Resolved API path; do not invent runtime values"
+        },
+        "client": {
+          "type": "string",
+          "description": "fetch/axios/client identifier"
+        },
+        "source": {
+          "type": "string",
+          "description": "Project-scoped identifier, stable within this source blueprint."
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "method",
+        "path"
+      ]
+    },
+    "form": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "screen": {
+          "type": "string",
+          "description": "Project-scoped identifier, stable within this source blueprint."
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Type annotation"
+              },
+              {
+                "$ref": "#/$defs/field"
+              }
+            ]
+          }
+        },
+        "submits": {
+          "type": "string",
+          "description": "Project-scoped identifier, stable within this source blueprint."
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type expressed by the actual source code"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "validation": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "default": {},
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "in_progress",
+            "blocked",
+            "done",
+            "deprecated"
+          ]
+        },
+        "screens": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Project-scoped identifier, stable within this source blueprint."
+          },
+          "default": []
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why this is a feature (not just a page)"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "uiFlow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "inferred",
+            "unknown"
+          ],
+          "description": "verified: explicit source evidence; inferred: plausible from code; unknown: unresolved"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "default": []
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "screen": {
+                "type": "string",
+                "description": "Project-scoped identifier, stable within this source blueprint."
+              },
+              "action": {
+                "type": "string"
+              },
+              "next": {
+                "type": "string",
+                "description": "Project-scoped identifier, stable within this source blueprint."
+              },
+              "condition": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "screen",
+              "action"
+            ]
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  }
+}

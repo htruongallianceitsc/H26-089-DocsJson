@@ -1,0 +1,258 @@
+{
+  "$schema": "./backend-blueprint.schema.json",
+  "kind": "backend",
+  "meta": {
+    "schemaVersion": "1.0",
+    "name": "ShopNow API",
+    "description": "API phục vụ ShopNow",
+    "repo": "shopnow-api",
+    "framework": "NestJS",
+    "scannedAt": "2026-10-14"
+  },
+  "features": {
+    "F-AUTH": {
+      "name": "Xác thực người dùng",
+      "endpoints": [
+        "EP-LOGIN"
+      ],
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/auth/auth.controller.ts"
+        }
+      ]
+    },
+    "F-ORDER": {
+      "name": "Tạo đơn hàng",
+      "endpoints": [
+        "EP-ORDER-CREATE"
+      ],
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/orders/orders.controller.ts"
+        }
+      ]
+    }
+  },
+  "endpoints": {
+    "EP-LOGIN": {
+      "name": "Login",
+      "method": "POST",
+      "path": "/auth/login",
+      "auth": {
+        "required": false
+      },
+      "request": {
+        "dto": "DTO-LOGIN"
+      },
+      "response": {
+        "status": 200
+      },
+      "service": "SV-AUTH",
+      "entities": [
+        "BE-USER"
+      ],
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/auth/auth.controller.ts",
+          "symbol": "login"
+        }
+      ]
+    },
+    "EP-ORDER-CREATE": {
+      "name": "Create Order",
+      "method": "POST",
+      "path": "/orders",
+      "auth": {
+        "required": true
+      },
+      "request": {
+        "dto": "DTO-ORDER-CREATE"
+      },
+      "response": {
+        "status": 201
+      },
+      "errors": [
+        {
+          "status": 400,
+          "code": "OUT_OF_STOCK"
+        }
+      ],
+      "service": "SV-ORDERS",
+      "entities": [
+        "BE-ORDER",
+        "BE-PRODUCT"
+      ],
+      "confidence": "verified",
+      "evidence": [
+        {
+          "path": "src/orders/orders.controller.ts",
+          "symbol": "create"
+        }
+      ]
+    }
+  },
+  "dtos": {
+    "DTO-LOGIN": {
+      "name": "LoginDto",
+      "fields": {
+        "email": {
+          "type": "string",
+          "required": true
+        },
+        "password": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "evidence": [
+        {
+          "path": "src/auth/dto/login.dto.ts"
+        }
+      ]
+    },
+    "DTO-ORDER-CREATE": {
+      "name": "CreateOrderDto",
+      "fields": {
+        "items": "OrderItem[]",
+        "address": "string"
+      },
+      "evidence": [
+        {
+          "path": "src/orders/dto/create-order.dto.ts"
+        }
+      ]
+    }
+  },
+  "services": {
+    "SV-AUTH": {
+      "name": "AuthService",
+      "methods": [
+        "login"
+      ],
+      "entities": [
+        "BE-USER"
+      ],
+      "evidence": [
+        {
+          "path": "src/auth/auth.service.ts"
+        }
+      ]
+    },
+    "SV-ORDERS": {
+      "name": "OrdersService",
+      "methods": [
+        "create"
+      ],
+      "entities": [
+        "BE-ORDER",
+        "BE-PRODUCT"
+      ],
+      "rules": [
+        "RULE-STOCK"
+      ],
+      "evidence": [
+        {
+          "path": "src/orders/orders.service.ts"
+        }
+      ]
+    }
+  },
+  "entities": {
+    "BE-USER": {
+      "name": "User",
+      "table": "users",
+      "fields": {
+        "id": "uuid",
+        "email": "string",
+        "role": "admin|customer"
+      },
+      "evidence": [
+        {
+          "path": "src/users/user.entity.ts"
+        }
+      ]
+    },
+    "BE-PRODUCT": {
+      "name": "Product",
+      "table": "products",
+      "fields": {
+        "id": "uuid",
+        "name": "string",
+        "price": "decimal",
+        "stock": "int"
+      },
+      "evidence": [
+        {
+          "path": "src/products/product.entity.ts"
+        }
+      ]
+    },
+    "BE-ORDER": {
+      "name": "Order",
+      "table": "orders",
+      "fields": {
+        "id": "uuid",
+        "userId": {
+          "type": "uuid"
+        },
+        "total": "decimal",
+        "status": "pending|paid|cancelled"
+      },
+      "relations": [
+        {
+          "field": "userId",
+          "target": "BE-USER",
+          "kind": "many-to-one"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "src/orders/order.entity.ts"
+        }
+      ]
+    }
+  },
+  "businessRules": {
+    "RULE-STOCK": {
+      "name": "Đủ tồn kho",
+      "condition": "stock >= requested quantity",
+      "effect": "Từ chối đặt hàng khi không đủ hàng",
+      "implementedBy": [
+        "SV-ORDERS"
+      ],
+      "evidence": [
+        {
+          "path": "src/orders/orders.service.ts"
+        }
+      ]
+    }
+  },
+  "migrations": {
+    "MIG-ORDER": {
+      "name": "Create orders table",
+      "tables": [
+        "orders"
+      ],
+      "indexes": [
+        "orders_user_id_idx"
+      ],
+      "evidence": [
+        {
+          "path": "src/database/migrations/001-create-orders.ts"
+        }
+      ]
+    }
+  },
+  "unknowns": [
+    {
+      "question": "Có hỗ trợ COD-only hay phương thức online khác?",
+      "relatedRefs": [
+        "EP-ORDER-CREATE"
+      ],
+      "reason": "Chưa đủ chứng cứ về payment policy."
+    }
+  ]
+}

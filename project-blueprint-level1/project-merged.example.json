@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "schemaVersion": "1.0",
+    "name": "ShopNow",
+    "description": "Dự án được tổng hợp từ frontend và backend; cần xác minh nghiệp vụ",
+    "stack": {
+      "frontend": "Next.js 14",
+      "backend": "NestJS"
+    }
+  },
+  "features": {
+    "F-LOGIN": {
+      "name": "Đăng nhập email",
+      "status": "done",
+      "screens": [
+        "S-LOGIN"
+      ],
+      "apis": [
+        "A-LOGIN"
+      ],
+      "entities": [
+        "E-USER"
+      ]
+    },
+    "F-ORDER": {
+      "name": "Đặt hàng",
+      "status": "in_progress",
+      "screens": [
+        "S-CHECKOUT"
+      ],
+      "apis": [
+        "A-ORDER-CREATE"
+      ],
+      "entities": [
+        "E-ORDER",
+        "E-PRODUCT"
+      ]
+    }
+  },
+  "screens": {
+    "S-LOGIN": {
+      "name": "Login",
+      "route": "/login",
+      "apis": [
+        "A-LOGIN"
+      ]
+    },
+    "S-CHECKOUT": {
+      "name": "Checkout",
+      "route": "/checkout",
+      "apis": [
+        "A-ORDER-CREATE"
+      ]
+    }
+  },
+  "apis": {
+    "A-LOGIN": {
+      "name": "Login",
+      "method": "POST",
+      "path": "/auth/login",
+      "entities": [
+        "E-USER"
+      ]
+    },
+    "A-ORDER-CREATE": {
+      "name": "Create Order",
+      "method": "POST",
+      "path": "/orders",
+      "entities": [
+        "E-ORDER",
+        "E-PRODUCT"
+      ]
+    }
+  },
+  "entities": {
+    "E-USER": {
+      "name": "User",
+      "fields": {
+        "id": "uuid",
+        "email": "string",
+        "role": "admin|customer"
+      }
+    },
+    "E-PRODUCT": {
+      "name": "Product",
+      "fields": {
+        "id": "uuid",
+        "name": "string",
+        "price": "decimal",
+        "stock": "int"
+      }
+    },
+    "E-ORDER": {
+      "name": "Order",
+      "fields": {
+        "id": "uuid",
+        "userId": {
+          "type": "uuid"
+        },
+        "total": "decimal",
+        "status": "pending|paid|cancelled"
+      }
+    }
+  },
+  "businessRules": {
+    "BR-STOCK": {
+      "description": "Đủ tồn kho",
+      "details": {
+        "condition": "stock >= requested quantity",
+        "effect": "Từ chối đặt hàng khi không đủ hàng"
+      }
+    }
+  }
+}
